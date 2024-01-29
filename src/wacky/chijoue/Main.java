@@ -166,7 +166,7 @@ public class Main {
 
 		
 		final String[] palettes = {"minecraft:air",
-		        "minecraft:cobweb",
+		        "minecraft:white_candle",
 		        "minecraft:black_wool",
 		        "minecraft:prismarine_bricks",
 		        "minecraft:emerald_block",
@@ -225,7 +225,7 @@ public class Main {
 		        "minecraft:warped_wart_block",
 		        "minecraft:deepslate",
 		        "minecraft:raw_iron_block",
-		        "minecraft:glow_lichen"
+		        "minecraft:verdant_froglight"
 				//,"minecraft:water"
 		        };
 		
@@ -245,7 +245,6 @@ public class Main {
 				gz.write(new String("Version").getBytes());
 				gz.write(new byte[]{0x00,0x00,0x00,0x02});
 
-				gz.write(new byte[]{0x03,0x00,0x0b});//int,11文字
 				gz.write(new String("DataVersion").getBytes());
 				gz.write(new byte[]{0x00,0x00,0x0D,0x00});
 
