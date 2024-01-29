@@ -245,6 +245,7 @@ public class Main {
 				gz.write(new String("Version").getBytes());
 				gz.write(new byte[]{0x00,0x00,0x00,0x02});
 
+				gz.write(new byte[]{0x03,0x00,0x0b});//int,11文字
 				gz.write(new String("DataVersion").getBytes());
 				gz.write(new byte[]{0x00,0x00,0x0D,0x00});
 
@@ -259,7 +260,6 @@ public class Main {
 				gz.write(new byte[]{0x02,0x00,0x06});//Short,6文字
 				gz.write(new String("Length").getBytes());
 				gz.write(ByteBuffer.allocate(2).putShort((short)length).array());
-
 				
 				gz.write(new byte[]{0x0A,0x00,0x07});//NBTTagCompound,7文字
 				gz.write(new String("Palette").getBytes());
