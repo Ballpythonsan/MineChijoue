@@ -261,18 +261,12 @@ public class Main {
 				gz.write(ByteBuffer.allocate(2).putShort((short)length).array());
 
 				
-				
-				gz.write(new byte[]{0x03,0x00,0x0A});//int,10文字
-				gz.write(new String("PaletteMax").getBytes());
-				gz.write(ByteBuffer.allocate(4).putInt(palettes.length).array());
-				
 				gz.write(new byte[]{0x0A,0x00,0x07});//NBTTagCompound,7文字
 				gz.write(new String("Palette").getBytes());
 					for(int i = 0; i < palettes.length; i++) {
 			               String palette = palettes[i];
-			               byte len1 = (byte) palette.length();
-			               byte len2 = (byte) (palette.length() >> 8);
-			                gz.write(new byte[]{0x03, len2, len1});//int
+			                gz.write(new byte[]{0x03});//int
+			                gz.write(ByteBuffer.allocate(2).putShort((short) palette.length()).array());
 		                	gz.write(palette.getBytes());			  
 		                	gz.write(ByteBuffer.allocate(4).putInt(i).array());
 						}
