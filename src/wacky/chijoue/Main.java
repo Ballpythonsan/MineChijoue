@@ -98,14 +98,14 @@ public class Main {
 				readImage.setRGB(x, z, colors[x][z].getR() << 16 | colors[x][z].getG() << 8 | colors[x][z].getB());
 			}
 		}
-
+		/***
 		System.out.println("Image load Complete.");
-		File f = new File(fileName + "_conv.png");
 		try{//透過pngはバグる？
-			ImageIO.write(readImage, "png", f);
+			ImageIO.write(readImage, "png", new File(fileName + "_conv.png"));
 		}catch(Exception e){
 			e.printStackTrace();
 		}
+		***/
 
 
 		//第三段階、ブロック高度の決定 上端に1ブロック追加する。
@@ -175,11 +175,11 @@ public class Main {
 		        "minecraft:brown_wool",
 		        "minecraft:clay",
 		        "minecraft:cyan_wool",
-		        "minecraft:dirt",
+		        "minecraft:granite",
 		        "minecraft:slime_block",
 		        "minecraft:green_wool",
 		        "minecraft:gray_wool",
-		        "minecraft:ice",
+		        "minecraft:packed_ice",
 		        "minecraft:iron_block",
 		        "minecraft:lapis_block",
 		        "minecraft:redstone_block",
@@ -194,7 +194,7 @@ public class Main {
 		        "minecraft:pink_wool",
 		        "minecraft:spruce_planks",
 		        "minecraft:purple_wool",
-		        "minecraft:quartz_block",
+		        "minecraft:target",
 		        "minecraft:red_wool",
 		        "minecraft:sandstone",
 		        "minecraft:stone",
@@ -207,14 +207,14 @@ public class Main {
 		        "minecraft:yellow_terracotta",
 		        "minecraft:lime_terracotta",
 		        "minecraft:pink_terracotta",
-		        "minecraft:gray_terracotta",
-		        "minecraft:light_gray_terracotta",
-		        "minecraft:cyan_terracotta",
+		        "minecraft:tuff",
+		        "minecraft:mud_bricks",
+		        "minecraft:mud",
 		        "minecraft:purple_terracotta",
 		        "minecraft:blue_terracotta",
-		        "minecraft:brown_terracotta",
+		        "minecraft:dripstone_block",
 		        "minecraft:green_terracotta",
-		        "minecraft:red_terracotta",
+		        "minecraft:decorated_pot",
 		        "minecraft:black_terracotta",
 		        "minecraft:crimson_nylium",
 		        "minecraft:crimson_planks",
@@ -226,7 +226,7 @@ public class Main {
 		        "minecraft:deepslate",
 		        "minecraft:raw_iron_block",
 		        "minecraft:verdant_froglight"
-				//,"minecraft:water"
+		        ,"minecraft:oak_leaves[persistent=true,waterlogged=true]"
 		        };
 		
 		
