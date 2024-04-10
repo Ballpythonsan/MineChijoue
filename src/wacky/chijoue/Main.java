@@ -121,7 +121,7 @@ public class Main {
 			for(int z=0;z<length-1;z++){
 				
 				if    (colors[x][z].getHeight() == -1) trend = false;
-				else if(colors[x][z].getHeight() == 0 && trend) y[x][z+1] = y[x][z];
+				else if(colors[x][z].getHeight() == 0 && trend) y[x][z+1] = y[x][z];//上昇してるときだけ
 				else if(colors[x][z].getHeight() == 1){
 					trend = true;
 					y[x][z+1] = y[x][z]+1;
@@ -131,14 +131,14 @@ public class Main {
 			}
 			
 			trend = true;
-			//下降する部分だけ
+			//下降する部分だけ(zを最後から最初までの順に)
 			for(int z=length-3; z>=0; z--){
 				
-				//一つ南の色を見て判断
+				//一つ南のブロックが求めている高低差を見て判断
 				if    (colors[x][z+1].getHeight() == 1) trend = true;
-				else if(colors[x][z+1].getHeight() == 0 && !trend && y[x][z+1] == 0) y[x][z+1] = y[x][z+2];
+				else if(colors[x][z+1].getHeight() == 0 && !trend && y[x][z+1] == 0) y[x][z+1] = y[x][z+2];//下降していて前のコードで既に高さが決定していない
 				else if(colors[x][z+1].getHeight() == -1){
-					if(y[x][z+1] > 0) continue;
+					if(y[x][z+1] > 0) continue;//上のコードで決定しているならパス
 					y[x][z+1] = y[x][z+2]+1;
 					trend = false;
 				}
@@ -148,19 +148,21 @@ public class Main {
 			
 			
 			//上昇の終わりと下降の始まりの高さの関係が矛盾してないかチェック
-			boolean premark = false;
+			trend = false;
 			for(int z=0;z<length-1;z++){
 				//一つ前の上昇下降マーク
-				if     (colors[x][z].getHeight() ==  1) premark = true;
-				else if(colors[x][z].getHeight() == -1 && premark){
+				if     (colors[x][z].getHeight() ==  1) trend = true;
+				else if(colors[x][z].getHeight() == -1 && trend){//上昇しているときに下降に転じた場合
+					//上下が逆転している場合、y[x][z] > y[x][z+1]と、正しくなっている場合はパス
 					if(z>0){if(y[x][z] <= y[x][z+1]){
+						//colors[x][i-1].getHeight() == 1のブロックになるまで高さを上げる(上げ幅は関係ないので上にならいくら上げても良い)
 						int a = y[x][z+1] + 1;
 						for(int i=z; i>0; i--) {
 							y[x][i] = a;
 							if(colors[x][i-1].getHeight() == 1) break;
 						}
 					}}
-					premark = false;
+					trend = false;
 				}
 			}
 			
@@ -261,7 +263,7 @@ public class Main {
 			}
 		}
 		
-		int height = max - min + 1;// e.g. max(5)-min(-2)+2 = 9. 5,4,3,2,1,0,-1,-2
+		int height = max - min + 1;
 
 		System.out.println("Schematic Width  : " + width);
 		System.out.println("Schematic Length : " + length);
