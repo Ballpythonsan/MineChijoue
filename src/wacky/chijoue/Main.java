@@ -10,6 +10,16 @@ import java.util.zip.GZIPOutputStream;
 import javax.imageio.ImageIO;
 
 public class Main {
+	
+	static int min(int x, int y){
+		if(x > y) return y;
+		else return x;
+	}
+	
+	static int max(int x, int y){
+		if(x < y) return y;
+		else return x;
+	}
 
 	//DDした画像を読み込む
 	public static void main(String[] args) {
@@ -120,30 +130,53 @@ public class Main {
 			//上昇する部分だけ
 			for(int z=0;z<length-1;z++){
 				
-				if    (colors[x][z].getHeight() == -1) trend = false;
+				//水に対応、61が水になっている
+				if(colors[x][z].getBlock() == 61){
+					y[x][z+1] = colors[x][z].getHeight()-1;//0が一番下なので1を引く
+					trend = true;
+				}
+				
+				else if(colors[x][z].getHeight() == -1) trend = false;
 				else if(colors[x][z].getHeight() == 0 && trend) y[x][z+1] = y[x][z];//上昇してるときだけ
 				else if(colors[x][z].getHeight() == 1){
 					trend = true;
 					y[x][z+1] = y[x][z]+1;
 				}
-				//else if(colors[x][z].getBlock() == 61);
-				//水に対応するときに書く
 			}
 			
 			trend = true;
 			//下降する部分だけ(zを最後から最初までの順に)
 			for(int z=length-3; z>=0; z--){
 				
+				//水に対応
+				if     (colors[x][z+1].getBlock() == 61) y[x][z+1] = 0;
+				
 				//一つ南のブロックが求めている高低差を見て判断
-				if    (colors[x][z+1].getHeight() == 1) trend = true;
-				else if(colors[x][z+1].getHeight() == 0 && !trend && y[x][z+1] == 0) y[x][z+1] = y[x][z+2];//下降していて前のコードで既に高さが決定していない
+				else if(colors[x][z+1].getHeight() == 1) trend = true;
+				else if(colors[x][z+1].getHeight() == 0 && !trend && y[x][z+1] == 0){
+					if(colors[x][z].getBlock() == 61){
+						y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]);
+						//南のブロックを上げる
+						int a = y[x][z+1];
+						for(int i=z+1; i<length-1; i++){
+							if(colors[x][z].getHeight() != 0) break;
+							y[x][z+1] = a;
+						}
+					}
+					else y[x][z+1] = y[x][z+2];//下降していて前のコードで既に高さが決定していない
+				}
 				else if(colors[x][z+1].getHeight() == -1){
-					if(y[x][z+1] > 0) continue;//上のコードで決定しているならパス
-					y[x][z+1] = y[x][z+2]+1;
+					if(colors[x][z].getBlock() == 61 && !trend) y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]+1);
+					else{
+						if(y[x][z+1] > 0){
+							trend = true;
+							continue;//上のコードで決定しているならパス
+						}
+					
+						y[x][z+1] = y[x][z+2]+1;
+					}
 					trend = false;
 				}
-				//else if(colors[x][z].getBlock() == 61);
-				//水に対応するときに書く
 			}
 			
 			
@@ -151,15 +184,15 @@ public class Main {
 			trend = false;
 			for(int z=0;z<length-1;z++){
 				//一つ前の上昇下降マーク
-				if     (colors[x][z].getHeight() ==  1) trend = true;
+				if     (colors[x][z].getHeight() ==  1 && colors[x][z].getBlock() != 61) trend = true;
 				else if(colors[x][z].getHeight() == -1 && trend){//上昇しているときに下降に転じた場合
 					//上下が逆転している場合、y[x][z] > y[x][z+1]と、正しくなっている場合はパス
 					if(z>0){if(y[x][z] <= y[x][z+1]){
-						//colors[x][i-1].getHeight() == 1のブロックになるまで高さを上げる(上げ幅は関係ないので上にならいくら上げても良い)
+						//colors[x][i-1].getHeight() == 1のブロックか水になるまで高さを上げる(上げ幅は関係ないので上にならいくら上げても良い)
 						int a = y[x][z+1] + 1;
-						for(int i=z; i>0; i--) {
+						for(int i=z; i>0; i--){
 							y[x][i] = a;
-							if(colors[x][i-1].getHeight() == 1) break;
+							if(colors[x][i-1].getHeight() == 1 || colors[x][i-1].getBlock() == 61) break;
 						}
 					}}
 					trend = false;
@@ -168,15 +201,16 @@ public class Main {
 			
 		}
 		
-		//列の最初と最後の高さを０にする
+		//列の最初と最後の高さを0にする
 		for(int x=0;x<width;x++){
 			//最初
-			//一番最初が下がっていないはずだがそうなっていない場合
-			if(colors[x][0].getHeight() == -1&&y[x][1] >= 0||colors[x][0].getHeight() == 0&&y[x][1] > 0){
+			//一番最初が0以上で下がって始まるか、または0より大きくて同じ高さで始まるか(水は0以上でも良い)
+			if((colors[x][0].getHeight() == -1 && y[x][1] >= 0) || 
+			   (colors[x][0].getHeight() ==  0 && y[x][1] >  0)    ){
 				//上がり始めを見つける
 				int end = length-1;
 				for(int z=0; z<length-1; z++){
-					if(colors[x][z].getHeight() == 1){
+					if(colors[x][z].getHeight() == 1 || colors[x][z].getBlock() == 61){
 						end = z;
 						break;
 					}
@@ -184,35 +218,15 @@ public class Main {
 				//最初から下がり終わりまでの全てを０より下の高さにする
 				int a = y[x][1]-colors[x][0].getHeight();//~.getHeight()が-１のとき多く引く
 				for(int z=0; z<end; z++) y[x][z+1] -= a;
-			}//
-			//else if(colors[x][0].getBlock() == 61);
-			//水に対応するときに書く
-			
-			
+			}
 			
 			//最後
-			//一番最後が非零負
-			if(y[x][length-1] < 0){
-				//下がり始めを見つける
-				int begin = 1;
-				for(int z=length-2; z > 0; z--){
-					if(colors[x][z].getHeight() == 1){
-						begin = z;
-						break;
-					}
-				}
-				//最後から下がり終わりまでの全てを０より下の高さにする
-				int a = y[x][length-1];
-				for(int z=length-2; z >= begin; z--) y[x][z+1] -= a;
-				//下がり始めが上がり終わり以上の高さだったら上がり終わりを高くする
-				if(y[x][begin-1] <= y[x][begin]) y[x][begin-1] = y[x][begin]+1;
-			}
-			//一番最後が非零正
-			else if(y[x][length-1] > 0){
-				//最後に下がった場所を見つける
+			//一番最後が非零正(上昇トレンドで終了している)
+			if(y[x][length-1] > 0){
+				//最後に下がった(もしくは水)場所を見つける
 				int end = 1;
 				for(int z=length-2; z > 0; z--){
-					if(colors[x][z].getHeight() == -1){
+					if(colors[x][z].getHeight() == -1 || colors[x][z].getBlock() == 61){
 						end = z;
 						break;
 					}
@@ -221,24 +235,26 @@ public class Main {
 				int a = y[x][length-1];
 				for(int z=length-2; z >= end; z--) y[x][z+1] -= a;
 			}
-			//else if(colors[x][length-1].getBlock() == 61);
-			//水に対応するときに書く
 		}
 		
 		//南北の上下関係が正しいかのチェック
 		boolean correct = true;
 		for(int x=0;x<width;x++){
 			for(int z=0;z<length-1;z++){
-				if     (y[x][z]  > y[x][z+1]) if(colors[x][z].getHeight() != -1) {
-					//System.out.println(x+","+z);
+				
+				//水は一つ北がどんなときでも正しくなる
+				if(colors[x][z].getBlock() == 61) continue;
+				
+				else if(y[x][z]  > y[x][z+1]) if(colors[x][z].getHeight() != -1){
+					//System.out.println(x+","+z+":cat1");
 					correct = false;
 				}
-				else if(y[x][z] == y[x][z+1]) if(colors[x][z].getHeight() !=  0) {
-					//System.out.println(x+","+z);
+				else if(y[x][z] == y[x][z+1]) if(colors[x][z].getHeight() !=  0){
+					//System.out.println(x+","+z+":cat2");
 					correct = false;
 					}
-				else if(y[x][z]  < y[x][z+1]) if(colors[x][z].getHeight() != -1) {
-					//System.out.println(x+","+z);
+				else if(y[x][z]  < y[x][z+1]) if(colors[x][z].getHeight() !=  1){
+					//System.out.println(x+","+z+":cat3");
 					correct = false;
 				}
 			}
@@ -255,11 +271,9 @@ public class Main {
 		for(int x=0;x<width;x++){
 			for(int z=0;z<length-1;z++){
 				//高さ測定
-				if(min > y[x][z+1]){
-					min = y[x][z+1];
-				}else if(max < y[x][z+1]){
-					max = y[x][z+1];
-				}
+				if(colors[x][z].getBlock() == 61) min = min(min, y[x][z+1]-colors[x][z].getHeight()+1);
+				else min = min(min, y[x][z+1]);
+				max = max(max, y[x][z+1]);
 			}
 		}
 		
@@ -281,8 +295,17 @@ public class Main {
 		//それ以外
 		for(int z=0;z<length-1;z++){
 			for(int x=0;x<width;x++){
-				int i = width * (length) * (y[x][z+1] - min) + width * (z+1) + x;
-				Blocks[i] = (byte) colors[x][z].getBlock();
+				//水だったらyの深さを増やす
+				if(colors[x][z].getBlock() == 61){
+					for(int j=0; j<colors[x][z].getHeight(); j++){
+						int i = width * (length) * (y[x][z+1] - j - min) + width * (z+1) + x;
+						Blocks[i] = (byte) colors[x][z].getBlock();
+					}
+				}
+				else{
+					int i = width * (length) * (y[x][z+1] - min) + width * (z+1) + x;
+					Blocks[i] = (byte) colors[x][z].getBlock();
+				}
 				//Data[i] = (byte) colors[x][z].getData();
 			}
 		}
