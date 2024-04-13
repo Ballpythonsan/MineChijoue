@@ -149,7 +149,7 @@ public class Main {
 			for(int z=length-3; z>=0; z--){
 				
 				//水に対応
-				if     (colors[x][z+1].getBlock() == 61) y[x][z+1] = 0;
+				if     (colors[x][z+1].getBlock() == 61 && !trend) continue;
 				
 				//一つ南のブロックが求めている高低差を見て判断
 				else if(colors[x][z+1].getHeight() == 1) trend = true;
@@ -207,7 +207,7 @@ public class Main {
 			//一番最初が0以上で下がって始まるか、または0より大きくて同じ高さで始まるか(水は0以上でも良い)
 			if((colors[x][0].getHeight() == -1 && y[x][1] >= 0) || 
 			   (colors[x][0].getHeight() ==  0 && y[x][1] >  0)    ){
-				//上がり始めを見つける
+				//上がり始め(もしくは水)を見つける
 				int end = length-1;
 				for(int z=0; z<length-1; z++){
 					if(colors[x][z].getHeight() == 1 || colors[x][z].getBlock() == 61){
@@ -246,15 +246,15 @@ public class Main {
 				if(colors[x][z].getBlock() == 61) continue;
 				
 				else if(y[x][z]  > y[x][z+1]) if(colors[x][z].getHeight() != -1){
-					//System.out.println(x+","+z+":cat1");
+					System.out.println(x+","+(z+1)+":cat1");
 					correct = false;
 				}
 				else if(y[x][z] == y[x][z+1]) if(colors[x][z].getHeight() !=  0){
-					//System.out.println(x+","+z+":cat2");
+					System.out.println(x+","+(z+1)+":cat2");
 					correct = false;
 					}
 				else if(y[x][z]  < y[x][z+1]) if(colors[x][z].getHeight() !=  1){
-					//System.out.println(x+","+z+":cat3");
+					System.out.println(x+","+(z+1)+":cat3");
 					correct = false;
 				}
 			}
