@@ -130,8 +130,8 @@ public class Main {
 			//上昇する部分だけ
 			for(int z=0;z<length-1;z++){
 				
-				//水に対応、61が水になっている
-				if(colors[x][z].getBlock() == 61){
+				//水に対応
+				if(colors[x][z].isWater()){
 					y[x][z+1] = colors[x][z].getHeight()-1;//0が一番下なので1を引く
 					trend = true;
 				}
@@ -149,12 +149,12 @@ public class Main {
 			for(int z=length-3; z>=0; z--){
 				
 				//水に対応
-				if     (colors[x][z+1].getBlock() == 61 && !trend) continue;
+				if     (colors[x][z+1].isWater() && !trend) continue;
 				
 				//一つ南のブロックが求めている高低差を見て判断
 				else if(colors[x][z+1].getHeight() == 1) trend = true;
 				else if(colors[x][z+1].getHeight() == 0 && !trend && y[x][z+1] == 0){
-					if(colors[x][z].getBlock() == 61){
+					if(colors[x][z].isWater()){
 						y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]);
 						//南のブロックを上げる
 						int a = y[x][z+1];
@@ -166,7 +166,7 @@ public class Main {
 					else y[x][z+1] = y[x][z+2];//下降していて前のコードで既に高さが決定していない
 				}
 				else if(colors[x][z+1].getHeight() == -1){
-					if(colors[x][z].getBlock() == 61 && !trend) y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]+1);
+					if(colors[x][z].isWater() && !trend) y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]+1);
 					else{
 						if(y[x][z+1] > 0){
 							trend = true;
@@ -192,7 +192,7 @@ public class Main {
 						int a = y[x][z+1] + 1;
 						for(int i=z; i>0; i--){
 							y[x][i] = a;
-							if(colors[x][i-1].getHeight() == 1 || colors[x][i-1].getBlock() == 61) break;
+							if(colors[x][i-1].getHeight() == 1 || colors[x][i-1].isWater()) break;
 						}
 					}}
 					trend = false;
@@ -210,7 +210,7 @@ public class Main {
 				//上がり始め(もしくは水)を見つける
 				int end = length-1;
 				for(int z=0; z<length-1; z++){
-					if(colors[x][z].getHeight() == 1 || colors[x][z].getBlock() == 61){
+					if(colors[x][z].getHeight() == 1 || colors[x][z].isWater()){
 						end = z;
 						break;
 					}
@@ -226,7 +226,7 @@ public class Main {
 				//最後に下がった(もしくは水)場所を見つける
 				int end = 1;
 				for(int z=length-2; z > 0; z--){
-					if(colors[x][z].getHeight() == -1 || colors[x][z].getBlock() == 61){
+					if(colors[x][z].getHeight() == -1 || colors[x][z].isWater()){
 						end = z;
 						break;
 					}
@@ -243,7 +243,7 @@ public class Main {
 			for(int z=0;z<length-1;z++){
 				
 				//水は一つ北がどんなときでも正しくなる
-				if(colors[x][z].getBlock() == 61) continue;
+				if(colors[x][z].isWater()) continue;
 				
 				else if(y[x][z]  > y[x][z+1]) if(colors[x][z].getHeight() != -1){
 					System.out.println(x+","+(z+1)+":cat1");
@@ -271,7 +271,7 @@ public class Main {
 		for(int x=0;x<width;x++){
 			for(int z=0;z<length-1;z++){
 				//高さ測定
-				if(colors[x][z].getBlock() == 61) min = min(min, y[x][z+1]-colors[x][z].getHeight()+1);
+				if(colors[x][z].isWater()) min = min(min, y[x][z+1]-colors[x][z].getHeight()+1);
 				else min = min(min, y[x][z+1]);
 				max = max(max, y[x][z+1]);
 			}
@@ -296,7 +296,7 @@ public class Main {
 		for(int z=0;z<length-1;z++){
 			for(int x=0;x<width;x++){
 				//水だったらyの深さを増やす
-				if(colors[x][z].getBlock() == 61){
+				if(colors[x][z].isWater()){
 					for(int j=0; j<colors[x][z].getHeight(); j++){
 						int i = width * (length) * (y[x][z+1] - j - min) + width * (z+1) + x;
 						Blocks[i] = (byte) colors[x][z].getBlock();

@@ -1,5 +1,7 @@
 package wacky.chijoue;
 
+import java.util.EnumSet;
+
 //色とブロックid,ダメージ値,高度上下
 public enum Color {
 	SLIME_1  ( 89,125, 39, 1, 0,-1),
@@ -239,5 +241,9 @@ public enum Color {
 
 	public int getHeight() {
 		return height;
+	}
+	
+	public boolean isWater() {
+		return EnumSet.of(WATER_1, WATER_2, WATER_3).contains(this);
 	}
 }
