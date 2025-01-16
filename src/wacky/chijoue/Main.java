@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
+import java.util.ResourceBundle;
 import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
@@ -39,6 +40,21 @@ public class Main {
 
 		}catch(Exception e){
 		      e.printStackTrace();
+		}
+		
+		//代替設定があったら使う
+		ResourceBundle substitute = null;
+		if (!args[1].isBlank()){
+			try{
+				File config = new File(args[1]);
+				String baseName = config.getName();
+				if (baseName.endsWith(".properties")) {
+					baseName = baseName.substring(0, baseName.lastIndexOf('.'));
+				}
+				substitute= ResourceBundle.getBundle(baseName);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 
 		int width =readImage.getWidth();
@@ -130,8 +146,8 @@ public class Main {
 			//上昇する部分だけ
 			for(int z=0;z<length-1;z++){
 				
-				//水に対応、61が水になっている
-				if(colors[x][z].getBlock() == 61){
+				//水に対応
+				if(colors[x][z].isWater()){
 					y[x][z+1] = colors[x][z].getHeight()-1;//0が一番下なので1を引く
 					trend = true;
 				}
@@ -149,12 +165,12 @@ public class Main {
 			for(int z=length-3; z>=0; z--){
 				
 				//水に対応
-				if     (colors[x][z+1].getBlock() == 61 && !trend) continue;
+				if     (colors[x][z+1].isWater() && !trend) continue;
 				
 				//一つ南のブロックが求めている高低差を見て判断
 				else if(colors[x][z+1].getHeight() == 1) trend = true;
 				else if(colors[x][z+1].getHeight() == 0 && !trend && y[x][z+1] == 0){
-					if(colors[x][z].getBlock() == 61){
+					if(colors[x][z].isWater()){
 						y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]);
 						//南のブロックを上げる
 						int a = y[x][z+1];
@@ -166,7 +182,7 @@ public class Main {
 					else y[x][z+1] = y[x][z+2];//下降していて前のコードで既に高さが決定していない
 				}
 				else if(colors[x][z+1].getHeight() == -1){
-					if(colors[x][z].getBlock() == 61 && !trend) y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]+1);
+					if(colors[x][z].isWater() && !trend) y[x][z+1] = max(colors[x][z].getHeight()-1, y[x][z+2]+1);
 					else{
 						if(y[x][z+1] > 0){
 							trend = true;
@@ -192,7 +208,7 @@ public class Main {
 						int a = y[x][z+1] + 1;
 						for(int i=z; i>0; i--){
 							y[x][i] = a;
-							if(colors[x][i-1].getHeight() == 1 || colors[x][i-1].getBlock() == 61) break;
+							if(colors[x][i-1].getHeight() == 1 || colors[x][i-1].isWater()) break;
 						}
 					}}
 					trend = false;
@@ -210,7 +226,7 @@ public class Main {
 				//上がり始め(もしくは水)を見つける
 				int end = length-1;
 				for(int z=0; z<length-1; z++){
-					if(colors[x][z].getHeight() == 1 || colors[x][z].getBlock() == 61){
+					if(colors[x][z].getHeight() == 1 || colors[x][z].isWater()){
 						end = z;
 						break;
 					}
@@ -226,7 +242,7 @@ public class Main {
 				//最後に下がった(もしくは水)場所を見つける
 				int end = 1;
 				for(int z=length-2; z > 0; z--){
-					if(colors[x][z].getHeight() == -1 || colors[x][z].getBlock() == 61){
+					if(colors[x][z].getHeight() == -1 || colors[x][z].isWater()){
 						end = z;
 						break;
 					}
@@ -243,7 +259,7 @@ public class Main {
 			for(int z=0;z<length-1;z++){
 				
 				//水は一つ北がどんなときでも正しくなる
-				if(colors[x][z].getBlock() == 61) continue;
+				if(colors[x][z].isWater()) continue;
 				
 				else if(y[x][z]  > y[x][z+1]) if(colors[x][z].getHeight() != -1){
 					System.out.println(x+","+(z+1)+":cat1");
@@ -271,7 +287,7 @@ public class Main {
 		for(int x=0;x<width;x++){
 			for(int z=0;z<length-1;z++){
 				//高さ測定
-				if(colors[x][z].getBlock() == 61) min = min(min, y[x][z+1]-colors[x][z].getHeight()+1);
+				if(colors[x][z].isWater()) min = min(min, y[x][z+1]-colors[x][z].getHeight()+1);
 				else min = min(min, y[x][z+1]);
 				max = max(max, y[x][z+1]);
 			}
@@ -289,14 +305,14 @@ public class Main {
 
 		//上端の石ブロック
 		for(int x=0;x<width;x++){
-			Blocks[width * (length) * -min + x] = 32;
+			Blocks[width * (length) * -min + x] = (byte) Color.STONE_1.getBlock();
 		}
 
 		//それ以外
 		for(int z=0;z<length-1;z++){
 			for(int x=0;x<width;x++){
 				//水だったらyの深さを増やす
-				if(colors[x][z].getBlock() == 61){
+				if(colors[x][z].isWater()){
 					for(int j=0; j<colors[x][z].getHeight(); j++){
 						int i = width * (length) * (y[x][z+1] - j - min) + width * (z+1) + x;
 						Blocks[i] = (byte) colors[x][z].getBlock();
@@ -311,41 +327,46 @@ public class Main {
 		}
 
 		
-		final String[] palettes = {"minecraft:air",
+		String[] palettes = {
+				"minecraft:air",
+				"minecraft:slime_block",
+		        "minecraft:sandstone",
 		        "minecraft:white_candle",
-		        "minecraft:black_wool",
-		        "minecraft:prismarine_bricks",
-		        "minecraft:emerald_block",
-		        "minecraft:gold_block",
-		        "minecraft:blue_wool",
-		        "minecraft:brown_wool",
-		        "minecraft:clay",
-		        "minecraft:cyan_wool",
-		        "minecraft:granite",
-		        "minecraft:slime_block",
-		        "minecraft:green_wool",
-		        "minecraft:gray_wool",
+		        "minecraft:redstone_block",
 		        "minecraft:packed_ice",
 		        "minecraft:iron_block",
-		        "minecraft:lapis_block",
-		        "minecraft:redstone_block",
 		        "minecraft:oak_leaves[persistent=true]",
-		        "minecraft:light_blue_wool",
-		        "minecraft:light_gray_wool",
-		        "minecraft:lime_wool",
-		        "minecraft:magenta_wool",
-		        "minecraft:netherrack",
-		        "minecraft:oak_planks",
-		        "minecraft:orange_wool",
-		        "minecraft:pink_wool",
-		        "minecraft:spruce_planks",
-		        "minecraft:purple_wool",
-		        "minecraft:target",
-		        "minecraft:red_wool",
-		        "minecraft:sandstone",
-		        "minecraft:stone",
 		        "minecraft:white_wool",
+		        "minecraft:clay",
+		        "minecraft:granite",
+		        "minecraft:stone",
+		        "minecraft:spruce_leaves[persistent=true,waterlogged=true]",
+		        "minecraft:oak_planks",
+		        "minecraft:target",
+		        
+		        "minecraft:orange_wool",
+		        "minecraft:magenta_wool",
+		        "minecraft:light_blue_wool",
 		        "minecraft:yellow_wool",
+		        "minecraft:lime_wool",
+		        "minecraft:pink_wool",
+		        "minecraft:gray_wool",
+		        "minecraft:light_gray_wool",
+		        "minecraft:cyan_wool",
+		        "minecraft:purple_wool",
+		        "minecraft:blue_wool",
+		        "minecraft:brown_wool",
+		        "minecraft:green_wool",
+		        "minecraft:red_wool",
+		        "minecraft:black_wool",
+		        
+		        "minecraft:gold_block",
+		        "minecraft:prismarine_bricks",
+		        "minecraft:lapis_block",
+		        "minecraft:emerald_block",
+		        "minecraft:spruce_planks",
+		        "minecraft:netherrack",
+		        		        
 		        "minecraft:white_terracotta",
 		        "minecraft:orange_terracotta",
 		        "minecraft:magenta_terracotta",
@@ -360,23 +381,32 @@ public class Main {
 		        "minecraft:blue_terracotta",
 		        "minecraft:dripstone_block",
 		        "minecraft:green_terracotta",
-		        "minecraft:decorated_pot",
+		        "minecraft:red_terracotta",
 		        "minecraft:black_terracotta",
+		        
 		        "minecraft:crimson_nylium",
 		        "minecraft:crimson_planks",
 		        "minecraft:crimson_hyphae",
+		        
 		        "minecraft:warped_nylium",
 		        "minecraft:warped_planks",
 		        "minecraft:warped_hyphae",
 		        "minecraft:warped_wart_block",
+		        
 		        "minecraft:deepslate",
 		        "minecraft:raw_iron_block",
-		        "minecraft:verdant_froglight"
-		        ,"minecraft:oak_leaves[persistent=true,waterlogged=true]"
+		        "minecraft:verdant_froglight",
 		        };
 		
-		
-		
+		//パレット書き換えでブロックの置換をする
+		if (substitute != null) {
+			for (int i = 0; i < palettes.length; i++) {
+				String key = String.valueOf(i);
+				if (substitute.containsKey(key)) {
+					palettes[i] = substitute.getString(key);
+				}
+			}
+		}
 
 			
 		//最終、ファイル書き出し
