@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
+import java.util.ResourceBundle;
 import java.util.zip.GZIPOutputStream;
 
 import javax.imageio.ImageIO;
@@ -39,6 +40,21 @@ public class Main {
 
 		}catch(Exception e){
 		      e.printStackTrace();
+		}
+		
+		//代替設定があったら使う
+		ResourceBundle substitute = null;
+		if (!args[1].isBlank()){
+			try{
+				File config = new File(args[1]);
+				String baseName = config.getName();
+				if (baseName.endsWith(".properties")) {
+					baseName = baseName.substring(0, baseName.lastIndexOf('.'));
+				}
+				substitute= ResourceBundle.getBundle(baseName);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 
 		int width =readImage.getWidth();
@@ -289,7 +305,7 @@ public class Main {
 
 		//上端の石ブロック
 		for(int x=0;x<width;x++){
-			Blocks[width * (length) * -min + x] = 32;
+			Blocks[width * (length) * -min + x] = (byte) Color.STONE_1.getBlock();
 		}
 
 		//それ以外
@@ -311,7 +327,7 @@ public class Main {
 		}
 
 		
-		final String[] palettes = {
+		String[] palettes = {
 				"minecraft:air",
 				"minecraft:slime_block",
 		        "minecraft:sandstone",
@@ -324,7 +340,7 @@ public class Main {
 		        "minecraft:clay",
 		        "minecraft:granite",
 		        "minecraft:stone",
-		        "minecraft:oak_leaves[persistent=true,waterlogged=true]",
+		        "minecraft:spruce_leaves[persistent=true,waterlogged=true]",
 		        "minecraft:oak_planks",
 		        "minecraft:target",
 		        
@@ -365,7 +381,7 @@ public class Main {
 		        "minecraft:blue_terracotta",
 		        "minecraft:dripstone_block",
 		        "minecraft:green_terracotta",
-		        "minecraft:decorated_pot",
+		        "minecraft:red_terracotta",
 		        "minecraft:black_terracotta",
 		        
 		        "minecraft:crimson_nylium",
@@ -382,8 +398,15 @@ public class Main {
 		        "minecraft:verdant_froglight",
 		        };
 		
-		
-		
+		//パレット書き換えでブロックの置換をする
+		if (substitute != null) {
+			for (int i = 0; i < palettes.length; i++) {
+				String key = String.valueOf(i);
+				if (substitute.containsKey(key)) {
+					palettes[i] = substitute.getString(key);
+				}
+			}
+		}
 
 			
 		//最終、ファイル書き出し
