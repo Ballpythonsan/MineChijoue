@@ -1,5 +1,6 @@
 package wacky.chijoue;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -30,6 +31,9 @@ public class Main {
 		try{
 			File file = new File(args[0]);
 		      readImage = ImageIO.read(file);
+		      if (readImage.getType() != BufferedImage.TYPE_INT_RGB) {
+		    	  readImage = removeAlphaChannel(readImage);
+		      }
 		      String fileNameExt = file.getName();//拡張子をとっぱらう。
 		      int index = fileNameExt.lastIndexOf('.');
 		      if(index >=0){
@@ -124,14 +128,18 @@ public class Main {
 				readImage.setRGB(x, z, colors[x][z].getR() << 16 | colors[x][z].getG() << 8 | colors[x][z].getB());
 			}
 		}
-		/***
+		
 		System.out.println("Image load Complete.");
-		try{//透過pngはバグる？
-			ImageIO.write(readImage, "png", new File(fileName + "_conv.png"));
+		try{
+			System.out.println("    " + fileName + "_conv.png out put.");
+			if (ImageIO.write(readImage, "png", new File(fileName + "_conv.png"))) {
+				System.out.println("    out put Done");
+			} else {
+				System.out.println("    out put Failed");
+			}
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		***/
 
 
 		//第三段階、ブロック高度の決定 上端に1ブロック追加する。
@@ -472,4 +480,19 @@ public class Main {
 
 	}
 
+	//透過を無くす
+	public static BufferedImage removeAlphaChannel(BufferedImage image) {
+		// 新しくRGB形式の画像を作成
+		BufferedImage rgbImage = new BufferedImage(
+			image.getWidth(),
+	        image.getHeight(),
+	        BufferedImage.TYPE_INT_RGB
+		);
+
+		// 元の画像を新しい画像に描画
+		Graphics2D g = rgbImage.createGraphics();
+		g.drawImage(image, 0, 0, null);
+		g.dispose();
+		return rgbImage;
+	}
 }
