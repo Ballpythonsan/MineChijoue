@@ -44,7 +44,7 @@ public class Main {
 		
 		//代替設定があったら使う
 		ResourceBundle substitute = null;
-		if (!args[1].isBlank()){
+		if (args.length > 1) { if (!args[1].isBlank()){
 			try{
 				File config = new File(args[1]);
 				String baseName = config.getName();
@@ -55,7 +55,7 @@ public class Main {
 			}catch(Exception e){
 				e.printStackTrace();
 			}
-		}
+		}}
 
 		int width =readImage.getWidth();
 		int length =readImage.getHeight();
