@@ -46,18 +46,24 @@ public class Main {
 		      e.printStackTrace();
 		}
 		
-		//代替設定があったら使う
-		ResourceBundle substitute = null;
+		ResourceBundle substitute= null;
+		boolean isPreview = false;
 		if (args.length > 1) { if (!args[1].isBlank()){
-			try{
-				File config = new File(args[1]);
-				String baseName = config.getName();
-				if (baseName.endsWith(".properties")) {
-					baseName = baseName.substring(0, baseName.lastIndexOf('.'));
+			
+			if (args[1].equals("--preview")) {// 画像だけプレビュー
+				isPreview = true;
+				
+			} else { // 代替設定があったら使う
+				try {
+					File config = new File(args[1]);
+					String baseName = config.getName();
+					if (baseName.endsWith(".properties")) {
+						baseName = baseName.substring(0, baseName.lastIndexOf('.'));
+					}
+					substitute = ResourceBundle.getBundle(baseName);
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-				substitute= ResourceBundle.getBundle(baseName);
-			}catch(Exception e){
-				e.printStackTrace();
 			}
 		}}
 
@@ -129,6 +135,7 @@ public class Main {
 			}
 		}
 		
+		// 地図絵のプレビューをPNGで出力
 		System.out.println("Image load Complete.");
 		try{
 			System.out.println("    " + fileName + "_conv.png out put.");
@@ -140,7 +147,10 @@ public class Main {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-
+		if (isPreview) {
+			System.out.println("Preview Successfully");
+			return;
+		}
 
 		//第三段階、ブロック高度の決定 上端に1ブロック追加する。
 		length++;
@@ -270,20 +280,20 @@ public class Main {
 				if(colors[x][z].isWater()) continue;
 				
 				else if(y[x][z]  > y[x][z+1]) if(colors[x][z].getHeight() != -1){
-					System.out.println(x+","+(z+1)+":cat1");
+					System.out.println(x+","+(z+1)+" : this hight lower than north, but that's wrong");
 					correct = false;
 				}
 				else if(y[x][z] == y[x][z+1]) if(colors[x][z].getHeight() !=  0){
-					System.out.println(x+","+(z+1)+":cat2");
+					System.out.println(x+","+(z+1)+" : this hight same north, but that's wrong");
 					correct = false;
 					}
 				else if(y[x][z]  < y[x][z+1]) if(colors[x][z].getHeight() !=  1){
-					System.out.println(x+","+(z+1)+":cat3");
+					System.out.println(x+","+(z+1)+" : this hight upper than north, but that's wrong");
 					correct = false;
 				}
 			}
 		}
-		if(correct) System.out.println("Done");
+		if(correct) System.out.println("Zero defects staircase map!");
 		else{
 			System.out.println("Failed");
 			System.out.println("There is an error in the program  or  Both north and south heights cannot be set to 0");
@@ -476,7 +486,7 @@ public class Main {
 			}
 		}
 
-		System.out.println("Schematic saved Succeesfully.");
+		System.out.println("Schematic saved Successfully.");
 
 	}
 
